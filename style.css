@@ -1,139 +1,131 @@
-/* ============================
-   🚪 大门点击 → 开启动画
-============================ */
-
-const gateLeft = document.querySelector(".gate-left");
-const gateRight = document.querySelector(".gate-right");
-const gateContainer = document.getElementById("gate-container");
-const content = document.getElementById("content");
-
-let opened = false;
-
-gateContainer.addEventListener("click", () => {
-    if (opened) return;
-    opened = true;
-
-    gateLeft.classList.add("gate-open-left");
-    gateRight.classList.add("gate-open-right");
-
-    // 过渡后显示内容
-    setTimeout(() => {
-        content.classList.remove("hidden");
-        gateContainer.style.display = "none";
-    }, 2000);
-});
-
-
-/* ============================
-   🎨 呼吸画布动画
-============================ */
-const canvas = document.getElementById("artCanvas");
-const ctx = canvas.getContext("2d");
-let uploadedImg = null;
-
-function drawBreathingImage() {
-    if (!uploadedImg) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const t = Date.now() * 0.002;
-    const scale = 1 + Math.sin(t) * 0.03;
-
-    const w = uploadedImg.width * scale;
-    const h = uploadedImg.height * scale;
-
-    ctx.drawImage(uploadedImg,
-        canvas.width / 2 - w / 2,
-        canvas.height / 2 - h / 2,
-        w, h
-    );
-
-    requestAnimationFrame(drawBreathingImage);
+body {
+    margin: 0;
+    background: #000;
+    font-family: "Microsoft YaHei", sans-serif;
+    overflow: hidden;
 }
 
-document.getElementById("imgUpload").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+/* ============ 🚪 巨门（更亮、更明显） ============ */
+#gate-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
 
-    const img = new Image();
-    img.onload = function () {
-        uploadedImg = img;
-        drawBreathingImage();
-    };
-    img.src = URL.createObjectURL(file);
-});
-
-
-/* ============================
-   🎵 背景音乐播放
-============================ */
-let music = null;
-
-document.getElementById("musicUpload").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    music = new Audio(URL.createObjectURL(file));
-});
-
-document.getElementById("musicPlay").addEventListener("click", () => {
-    if (music) music.play();
-});
-
-document.getElementById("musicPause").addEventListener("click", () => {
-    if (music) music.pause();
-});
-
-
-/* ============================
-   🎤 语音识别
-============================ */
-let recognizing = false;
-let recognition;
-
-if ("webkitSpeechRecognition" in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = "zh-CN";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = function (event) {
-        let text = "";
-        for (let i = 0; i < event.results.length; i++) {
-            text += event.results[i][0].transcript;
-        }
-        document.getElementById("voiceText").innerText = text;
-    };
+    /* 门后背景 → 明亮光源，增强对比 */
+    background: radial-gradient(circle at center, #333, #000);
+    overflow: hidden;
+    cursor: pointer;
 }
 
-document.getElementById("startVoice").addEventListener("click", () => {
-    if (!recognition) {
-        alert("你的浏览器不支持录音功能~");
-        return;
-    }
+/* 左右大门（颜色加亮 5 倍） */
+.gate {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
 
-    recognition.start();
-});
+    /* 明亮金属纹理（非常明显） */
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #666 0px,
+            #555 10px,
+            #444 20px
+        );
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.7);
+    transition: transform 2s ease-in-out;
+}
 
+/* 左门 */
+.gate-left {
+    left: 0;
+    border-right: 4px solid #000;
+}
 
-/* ============================
-   ✨ 生成治愈风日记
-============================ */
-document.getElementById("makeDiary").addEventListener("click", () => {
-    const text = document.getElementById("voiceText").innerText.trim();
-    if (!text) {
-        alert("请先说点什么吧~");
-        return;
-    }
+/* 右门 */
+.gate-right {
+    right: 0;
+    border-left: 4px solid #000;
+}
 
-    const diary =
-        "🌙 今夜的风很温柔。\n" +
-        "听你刚刚的语气，我似乎感受到了一点点疲惫，也有一点期待。\n\n" +
-        "💛 你的心情写在字句里，我都看得见。\n" +
-        "无论世界多吵，总有一处小小的安静角落，愿意为你亮一盏灯。\n\n" +
-        "✨ 愿明天的你，被温柔包裹，被好运击中。\n" +
-        "而这些话，会陪你，直到你笑出来为止。\n\n" +
-        "— 来自：你的生日礼物页面";
+/* 开门动画 */
+.gate-open-left {
+    transform: translateX(-100%);
+}
 
-    document.getElementById("diaryOutput").innerText = diary;
-});
+.gate-open-right {
+    transform: translateX(100%);
+}
+
+/* 点击提示 */
+#click-hint {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    text-align: center;
+    color: #fff;
+    font-size: 24px;
+    animation: blink 1.3s infinite;
+    z-index: 20;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: .3; }
+    100% { opacity: 1; }
+}
+
+/* 内容区隐藏 */
+.hidden {
+    display: none;
+}
+
+/* 其余内容区样式保持不变 */
+#gallery {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.art-img {
+    width: 180px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+}
+
+.upload-section {
+    margin: 20px 0;
+    text-align: center;
+    color: #eee;
+}
+
+#artCanvas {
+    display: block;
+    margin: 0 auto;
+    background: #222;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+#voiceText, #diaryOutput {
+    margin: 20px;
+    color: #eee;
+    line-height: 1.6;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #444;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #666;
+}
