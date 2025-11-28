@@ -1,53 +1,45 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <title>张嘉嘉的25岁生日礼物 · Memory Corridor</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Memory Fragments · 星光梦境回廊</title>
+    <link rel="stylesheet" href="style.css">
 
-    <!-- 手写温柔字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Long+Cang&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+    <!-- 手写风字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=La+Belle+Aurore&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- 🌌 梦境粒子背景 -->
-<canvas id="bgCanvas"></canvas>
+<!-- 🌓 1) 星空多层视差背景 -->
+<div id="stars-layer1" class="stars"></div>
+<div id="stars-layer2" class="stars"></div>
+<div id="stars-layer3" class="stars"></div>
 
-<!-- 🌀 中心记忆碎片（不规则撕裂） -->
-<div id="memory-center">
+<!-- 🎤 麦克风 + API Key -->
+<div id="top-controls">
+    <button id="mic-btn">
+        <div class="mic-circle"></div>
+        <div class="mic-icon"></div>
+    </button>
 
-    <!-- 撕裂边缘 Mask（svg 不规则形状） -->
-    <svg id="tear-mask" width="0" height="0">
-        <defs>
-            <clipPath id="clipTear" clipPathUnits="objectBoundingBox">
-                <path id="tearPath" d="" />
-            </clipPath>
-        </defs>
-    </svg>
-
-    <!-- 粒子发光层 -->
-    <canvas id="glowCanvas"></canvas>
-
-    <!-- 主图 -->
-    <img id="memory-img" src="images/p1.jpg" alt="">
-    
-    <!-- 麦克风按钮 -->
-    <div id="mic-button">🎤</div>
+    <input id="apiKeyInput" placeholder="Enter OpenAI API Key to activate AI" />
 </div>
 
-<!-- 👁 左右碎片 -->
-<div id="side-left" class="side-fragment"></div>
-<div id="side-right" class="side-fragment"></div>
-
-<!-- 📝 温柔治愈日志 -->
-<div id="diary-panel">
-    <h3>📝 梦境治愈日志</h3>
-    <textarea id="diaryText"></textarea>
-    <div class="buttons">
-        <button id="copyDiary">复制</button>
-        <button id="saveDiary">保存 TXT</button>
-    </div>
+<!-- 🌙 2) 中心记忆图像（不规则边缘 + 星光扩散） -->
+<div id="memory-container">
+    <canvas id="particleCanvas"></canvas>
+    <img id="memory-img" src="images/p1.jpg">
 </div>
+
+<!-- ➡ ⬅ 左右切换 -->
+<div id="left-nav"></div>
+<div id="right-nav"></div>
+
+<!-- 📖 3) 文学风对话显示 -->
+<div id="dialogue-box"></div>
+
+<!-- ✨ 4) Save Memory 按钮 -->
+<div id="saveBtn">Save Memory</div>
 
 <script src="script.js"></script>
 </body>
