@@ -2,53 +2,33 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>张嘉嘉的25岁生日礼物</title>
+    <title>张嘉嘉的25岁生日礼物 · Memory Corridor</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- 🚪 大门 -->
-<div id="gate-container">
-    <div class="gate gate-left"></div>
-    <div class="gate gate-right"></div>
-    <div id="click-hint">点击大门开启惊喜</div>
+<!-- 🌌 梦境粒子背景 -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- 🌀 中心记忆碎片 -->
+<div id="memory-center">
+    <div id="circle-glow"></div>
+    <img id="memory-img" src="images/p1.jpg" alt="">
+    <div id="mic-button">🎤</div>
 </div>
 
-<!-- 画作内容区 -->
-<div id="content" class="hidden">
+<!-- ⬅ ➡ 左右切换 -->
+<div id="side-left" class="side-fragment"></div>
+<div id="side-right" class="side-fragment"></div>
 
-    <h2 class="title">✨ 你的画开始呼吸了 ✨</h2>
-
-    <div id="gallery">
-        <img src="images/p1.jpg" class="art-img">
-        <img src="images/p2.jpg" class="art-img">
-        <img src="images/p3.jpg" class="art-img">
+<!-- ✨ 日记区 -->
+<div id="diary-panel">
+    <h3>📝 温柔治愈日记</h3>
+    <textarea id="diaryText"></textarea>
+    <div class="buttons">
+        <button id="copyDiary">复制</button>
+        <button id="saveDiary">保存 TXT</button>
     </div>
-
-    <div class="upload-section">
-        <p>上传你的照片，让它也活过来：</p>
-        <input type="file" id="imgUpload" accept="image/*">
-    </div>
-
-    <canvas id="artCanvas" width="500" height="500"></canvas>
-
-    <!-- 背景音乐 -->
-    <div class="upload-section">
-        <p>上传你喜欢的背景音乐（mp3/wav）：</p>
-        <input type="file" id="musicUpload" accept="audio/*">
-        <button id="musicPlay">播放</button>
-        <button id="musicPause">暂停</button>
-    </div>
-
-    <!-- 语音 -->
-    <div id="voice-area">
-        <p class="title">🎤 对我说说今天的心情吧</p>
-        <button id="startVoice">开始录音</button>
-        <div id="voiceText"></div>
-        <button id="makeDiary">生成温柔治愈风日记</button>
-        <div id="diaryOutput"></div>
-    </div>
-
 </div>
 
 <script src="script.js"></script>
