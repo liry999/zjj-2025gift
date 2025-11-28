@@ -7,24 +7,14 @@
 </head>
 <body>
 
-<!-- ===================== -->
-<!-- 🚪 大门开启动画 -->
-<!-- ===================== -->
+<!-- 🚪 大门 -->
 <div id="gate-container">
-
-    <!-- 左扇门 -->
     <div class="gate gate-left"></div>
-
-    <!-- 右扇门 -->
     <div class="gate gate-right"></div>
-
-    <!-- 点击提示 -->
     <div id="click-hint">点击大门开启惊喜</div>
 </div>
 
-<!-- ===================== -->
-<!-- 🎨 内容区（画作部分） -->
-<!-- ===================== -->
+<!-- 画作内容区 -->
 <div id="content" class="hidden">
 
     <h2 class="title">✨ 你的画开始呼吸了 ✨</h2>
@@ -42,7 +32,7 @@
 
     <canvas id="artCanvas" width="500" height="500"></canvas>
 
-    <!-- 🎵 背景音乐上传 -->
+    <!-- 背景音乐 -->
     <div class="upload-section">
         <p>上传你喜欢的背景音乐（mp3/wav）：</p>
         <input type="file" id="musicUpload" accept="audio/*">
@@ -50,7 +40,7 @@
         <button id="musicPause">暂停</button>
     </div>
 
-    <!-- 🎤 语音 + 日记生成 -->
+    <!-- 语音 -->
     <div id="voice-area">
         <p class="title">🎤 对我说说今天的心情吧</p>
         <button id="startVoice">开始录音</button>
