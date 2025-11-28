@@ -1,140 +1,180 @@
+/* ---------------------------------------------------
+   🌌 全局
+--------------------------------------------------- */
 body {
     margin: 0;
     overflow: hidden;
-    font-family: "Microsoft YaHei", sans-serif;
+    background: #000;
+    font-family: "Dancing Script", "Long Cang", "Microsoft YaHei", sans-serif;
+    color: #eee;
 }
 
-/* 🌌 背景粒子 */
+/* ---------------------------------------------------
+   🌌 梦境背景粒子
+--------------------------------------------------- */
 #bgCanvas {
     position: fixed;
     top: 0; left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: -2;
-    background: radial-gradient(circle at center, #0d0d16, #000);
+    z-index: -10;
+    background: radial-gradient(circle at center, #101020, #000);
 }
 
-/* 🌀 中心记忆碎片 */
+/* ---------------------------------------------------
+   🌀 中心记忆碎片（撕裂不规则形状）
+--------------------------------------------------- */
 #memory-center {
     position: absolute;
     top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 260px;
-    height: 260px;
+    transform: translate(-50%, -53%);
+    width: 300px;
+    height: 300px;
     animation: float 6s ease-in-out infinite;
+    pointer-events: auto;
 }
+
 @keyframes float {
-    0% { transform: translate(-50%, -52%); }
-    50% { transform: translate(-50%, -48%); }
-    100% { transform: translate(-50%, -52%); }
+    0% { transform: translate(-50%, -54%); }
+    50% { transform: translate(-50%, -50%); }
+    100% { transform: translate(-50%, -54%); }
 }
 
-/* ✨ 银色粒子光圈 */
-#circle-glow {
-    position: absolute;
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(180,180,255,0.4), transparent 70%);
-    box-shadow: 0 0 25px rgba(180,180,255,0.6);
-    filter: blur(3px);
-}
-
-/* 圆形记忆图片 */
+/* 主图不规则撕裂裁剪 */
 #memory-img {
-    position: absolute;
-    width: 100%; height: 100%;
-    border-radius: 50%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+
+    /* 使用 SVG path 当撕裂 mask */
+    clip-path: url(#clipTear);
+
+    /* 轻柔发光 */
     box-shadow:
-        0 0 30px rgba(200,200,255,0.4),
-        inset 0 0 40px rgba(255,255,255,0.15);
+        0 0 30px rgba(200, 200, 255, 0.4),
+        0 0 60px rgba(160, 160, 255, 0.25),
+        inset 0 0 40px rgba(255, 255, 255, 0.15);
 }
 
-/* 🎤 麦克风按钮 */
+/* 粒子发光层（canvas） */
+#glowCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------
+   🎤 麦克风按钮
+--------------------------------------------------- */
 #mic-button {
     position: absolute;
-    bottom: -18px; left: 50%;
+    bottom: -25px;
+    left: 50%;
     transform: translateX(-50%);
-    font-size: 22px;
     padding: 12px;
-    background: rgba(255,255,255,0.23);
-    border: 1px solid #aaa;
+    font-size: 24px;
+    background: rgba(255,255,255,0.25);
     border-radius: 50%;
-    cursor: pointer;
     backdrop-filter: blur(6px);
+    cursor: pointer;
     transition: 0.3s;
 }
+
 #mic-button:hover {
     transform: translateX(-50%) scale(1.15);
     background: rgba(255,255,255,0.35);
 }
 
-/* 👁 左右碎片预览 */
+/* ---------------------------------------------------
+   👁 左右碎片预览
+--------------------------------------------------- */
 .side-fragment {
     position: absolute;
     top: 50%;
-    width: 160px; height: 160px;
-    border-radius: 50%;
+    width: 180px;
+    height: 180px;
+    transform: translateY(-50%);
+    border-radius: 12%;
     background-size: cover;
     background-position: center;
     filter: blur(1px) brightness(0.7);
-    opacity: 0.7;
-    transition: 0.25s;
+    opacity: 0.75;
+    clip-path: polygon(
+        10% 0%, 90% 0%, 100% 20%, 95% 40%, 100% 60%,
+        90% 90%, 50% 100%, 10% 90%, 0% 60%, 5% 35%, 0% 10%
+    );
+    transition: 0.3s;
 }
 
-#side-left {
-    left: 8%;
-    transform: translateY(-50%);
-}
-#side-right {
-    right: 8%;
-    transform: translateY(-50%);
-}
+#side-left { left: 6%; }
+#side-right { right: 6%; }
 
 .side-fragment:hover {
     filter: blur(0px) brightness(1);
     transform: translateY(-50%) scale(1.05);
 }
 
-/* ✨ 日记区 */
+/* ---------------------------------------------------
+   📝 日记面板
+--------------------------------------------------- */
 #diary-panel {
     position: absolute;
-    bottom: 20px; left: 50%;
+    bottom: 25px;
+    left: 50%;
     transform: translateX(-50%);
     width: 70%;
-    max-width: 600px;
-    background: rgba(20,20,30,0.55);
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #666;
-    box-shadow: 0 0 8px rgba(200,200,255,0.4);
-    backdrop-filter: blur(6px);
-    color: #eee;
+    max-width: 650px;
+
+    background: rgba(15,15,25,0.55);
+    border: 1px solid rgba(180,180,255,0.45);
+    border-radius: 12px;
+    padding: 16px;
+
+    box-shadow: 0 0 20px rgba(160,160,255,0.25);
+    backdrop-filter: blur(8px);
+}
+
+#diary-panel h3 {
+    margin-top: 0;
+    font-size: 26px;
+    font-family: "Dancing Script";
+    letter-spacing: 1px;
+    text-align: center;
+    color: #e5e5ff;
 }
 
 #diaryText {
     width: 100%;
     height: 160px;
     background: rgba(0,0,0,0.35);
-    border: 1px solid #555;
-    border-radius: 8px;
-    padding: 10px;
-    color: #eee;
+    border: 1px solid rgba(120,120,170,0.5);
+    border-radius: 10px;
+    color: #ddd;
+    padding: 12px;
+    font-size: 18px;
+    font-family: "Long Cang", cursive;
     resize: vertical;
 }
 
 .buttons {
     margin-top: 10px;
+    text-align: right;
 }
+
 button {
-    padding: 8px 15px;
-    background: #444;
+    font-family: "Dancing Script";
+    padding: 8px 16px;
+    font-size: 20px;
+    background: rgba(60,60,100,0.6);
+    border: 1px solid rgba(120,120,200,0.6);
+    border-radius: 8px;
     color: #eee;
-    border-radius: 6px;
-    border: 1px solid #777;
     cursor: pointer;
-    margin-right: 8px;
+    margin-left: 8px;
 }
+
 button:hover {
-    background: #666;
+    background: rgba(90,90,150,0.7);
 }
