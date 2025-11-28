@@ -2,52 +2,28 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>张嘉嘉的25岁生日礼物 · Memory Corridor</title>
+    <title>张嘉嘉 · 25岁生日梦境礼物</title>
     <link rel="stylesheet" href="style.css" />
-
-    <!-- 手写温柔字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Long+Cang&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- 🌌 梦境粒子背景 -->
-<canvas id="bgCanvas"></canvas>
+<canvas id="bg"></canvas>
 
-<!-- 🌀 中心记忆碎片（不规则撕裂） -->
-<div id="memory-center">
+<!-- 3D 旋转星环 -->
+<div id="star-ring"></div>
 
-    <!-- 撕裂边缘 Mask（svg 不规则形状） -->
-    <svg id="tear-mask" width="0" height="0">
-        <defs>
-            <clipPath id="clipTear" clipPathUnits="objectBoundingBox">
-                <path id="tearPath" d="" />
-            </clipPath>
-        </defs>
-    </svg>
-
-    <!-- 粒子发光层 -->
-    <canvas id="glowCanvas"></canvas>
-
-    <!-- 主图 -->
-    <img id="memory-img" src="images/p1.jpg" alt="">
-    
-    <!-- 麦克风按钮 -->
-    <div id="mic-button">🎤</div>
+<!-- 中央照片 -->
+<div id="center-box">
+    <img id="center-img" src="images/p1.jpg">
 </div>
 
-<!-- 👁 左右碎片 -->
-<div id="side-left" class="side-fragment"></div>
-<div id="side-right" class="side-fragment"></div>
-
-<!-- 📝 温柔治愈日志 -->
-<div id="diary-panel">
-    <h3>📝 梦境治愈日志</h3>
-    <textarea id="diaryText"></textarea>
-    <div class="buttons">
-        <button id="copyDiary">复制</button>
-        <button id="saveDiary">保存 TXT</button>
-    </div>
+<!-- 麦克风 -->
+<div id="mic-box">
+    <button id="micBtn">🎤</button>
 </div>
+
+<!-- 输出日记 -->
+<div id="diary"></div>
 
 <script src="script.js"></script>
 </body>
