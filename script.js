@@ -1,150 +1,240 @@
-/* ================ 0. 加载图片 ================ */
-let images = ["images/p1.jpg", "images/p2.jpg", "images/p3.jpg"];
+/* ============================================================
+   🌌 1. 背景梦境粒子
+============================================================ */
+const bg = document.getElementById("bgCanvas");
+const bgCtx = bg.getContext("2d");
+
+function resize() {
+    bg.width = window.innerWidth;
+    bg.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
+
+let bgParticles = [];
+for (let i = 0; i < 150; i++) {
+    bgParticles.push({
+        x: Math.random() * bg.width,
+        y: Math.random() * bg.height,
+        r: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.4 + 0.3
+    });
+}
+
+function drawBackground() {
+    bgCtx.clearRect(0,0,bg.width,bg.height);
+    for (let p of bgParticles) {
+        bgCtx.beginPath();
+        bgCtx.fillStyle = `rgba(170,170,255,${p.alpha})`;
+        bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        bgCtx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > bg.width) p.vx *= -1;
+        if (p.y < 0 || p.y > bg.height) p.vy *= -1;
+    }
+    requestAnimationFrame(drawBackground);
+}
+drawBackground();
+
+
+/* ============================================================
+   ✂ 2. 生成不规则撕裂形状 path
+============================================================ */
+function randomTearPath() {
+    const points = [];
+    const steps = 12;
+    for (let i = 0; i <= steps; i++) {
+        let px = i / steps;
+        let py = Math.random() * 0.15 + (i % 2 ? 0.85 : 0.65);
+        points.push(`${px.toFixed(3)} ${py.toFixed(3)}`);
+    }
+    return `M0 0 L1 0 L1 1 L0 1 Z M${points.join(" L ")} Z`;
+}
+
+document.getElementById("tearPath").setAttribute("d", randomTearPath());
+
+
+/* ============================================================
+   💫 3. 粒子沿撕裂边缘飞散
+============================================================ */
+const glow = document.getElementById("glowCanvas");
+const gCtx = glow.getContext("2d");
+
+glow.width = 300;
+glow.height = 300;
+
+let glowParticles = [];
+for (let i = 0; i < 40; i++) {
+    glowParticles.push({
+        x: Math.random() * glow.width,
+        y: Math.random() * glow.height,
+        r: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        alpha: Math.random() * 0.7 + 0.3
+    });
+}
+
+function drawGlow() {
+    gCtx.clearRect(0,0,glow.width,glow.height);
+    for (let p of glowParticles) {
+        gCtx.beginPath();
+        gCtx.fillStyle = `rgba(200,200,255,${p.alpha})`;
+        gCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        gCtx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > glow.width) p.vx *= -1;
+        if (p.y < 0 || p.y > glow.height) p.vy *= -1;
+    }
+    requestAnimationFrame(drawGlow);
+}
+drawGlow();
+
+
+/* ============================================================
+   🌀 4. 图片切换（左/右碎片）
+============================================================ */
+const images = ["images/p1.jpg", "images/p2.jpg", "images/p3.jpg"];
 let current = 0;
 
-/* 自动显示三张 */
-const mainImg = document.getElementById("memory-img");
+const centerImg = document.getElementById("memory-img");
 const leftFrag = document.getElementById("side-left");
 const rightFrag = document.getElementById("side-right");
 
 function updateFragments() {
-    mainImg.src = images[current];
-    leftFrag.style.backgroundImage = `url(${images[(current - 1 + images.length)%images.length]})`;
-    rightFrag.style.backgroundImage = `url(${images[(current + 1)%images.length]})`;
+    centerImg.src = images[current];
+    leftFrag.style.backgroundImage =
+        `url(${images[(current - 1 + images.length) % images.length]})`;
+    rightFrag.style.backgroundImage =
+        `url(${images[(current + 1) % images.length]})`;
 }
 updateFragments();
 
-/* 左右切换 */
-leftFrag.onclick = () => { current = (current - 1 + images.length)%images.length; updateFragments(); };
-rightFrag.onclick = () => { current = (current + 1)%images.length; updateFragments(); };
-
-/* ================ 1. 星空背景 ================ */
-
-const starCanvas = document.getElementById("starCanvas");
-const sctx = starCanvas.getContext("2d");
-
-function resize() {
-    starCanvas.width = innerWidth;
-    starCanvas.height = innerHeight;
-}
-resize();
-addEventListener("resize", resize);
-
-let stars = [];
-for (let i = 0; i < 150; i++) stars.push({
-    x: Math.random()*innerWidth,
-    y: Math.random()*innerHeight,
-    r: Math.random()*1.8,
-    s: Math.random()*0.6 + 0.2
-});
-
-function drawStars() {
-    sctx.clearRect(0,0,innerWidth,innerHeight);
-    for (let s of stars) {
-        sctx.fillStyle = `rgba(180,180,255,0.9)`;
-        sctx.shadowBlur = 8;
-        sctx.shadowColor = "#99f";
-        sctx.beginPath();
-        sctx.moveTo(s.x, s.y);
-        sctx.lineTo(s.x + s.r, s.y + s.r*2);
-        sctx.lineTo(s.x - s.r, s.y + s.r*2);
-        sctx.closePath();
-        sctx.fill();
-
-        s.y += s.s;
-        if (s.y > innerHeight) s.y = -20;
-    }
-    requestAnimationFrame(drawStars);
-}
-drawStars();
-
-/* ================ 2. 图片不规则碎裂 mask + 粒子边缘 ================ */
-
-const maskCanvas = document.getElementById("maskCanvas");
-const mctx = maskCanvas.getContext("2d");
-
-function randomPoints() {
-    let pts = [];
-    for (let i=0;i<24;i++){
-        let angle = (i/24)*Math.PI*2;
-        let radius = 150 + Math.random()*20*(Math.random()>0.5?1:-1);
-        pts.push({
-            x: 150 + radius*Math.cos(angle),
-            y: 150 + radius*Math.sin(angle)
-        });
-    }
-    return pts;
-}
-
-let pts = randomPoints();
-
-function drawMask(){
-    maskCanvas.width = 300;
-    maskCanvas.height = 300;
-    mctx.clearRect(0,0,300,300);
-
-    mctx.beginPath();
-    mctx.moveTo(pts[0].x, pts[0].y);
-    for (let p of pts) mctx.lineTo(p.x, p.y);
-    mctx.closePath();
-
-    mctx.strokeStyle = "rgba(200,200,255,0.8)";
-    mctx.shadowColor = "#ccf";
-    mctx.shadowBlur = 15;
-    mctx.lineWidth = 3;
-    mctx.stroke();
-}
-drawMask();
-
-/* ================ 3. 连续对话（恋爱式梦境人格） ================ */
-
-let diary = "";
-let mic = document.getElementById("mic-icon");
-let diaryBox = document.getElementById("diaryText");
-
-let reco = null;
-if ('webkitSpeechRecognition' in window){
-    reco = new webkitSpeechRecognition();
-    reco.lang = "zh-CN";
-}
-
-mic.onclick = () => {
-    if(!reco){ alert("请使用手机或 Chrome"); return; }
-
-    diaryBox.value = "正在聆听你...\n";
-    reco.start();
-
-    reco.onresult = e => {
-        let text = e.results[0][0].transcript;
-        diary += generateReply(text) + "\n\n";
-        diaryBox.value = diary;
-    };
+leftFrag.onclick = () => {
+    current = (current - 1 + images.length) % images.length;
+    document.getElementById("tearPath").setAttribute("d", randomTearPath());
+    updateFragments();
 };
 
-function generateReply(text){
-    let replyTemplates = [
-        `“${text}”啊…  
-你说话的声音里，有一种温柔的力量。  
-就像夜空慢慢裂开，露出一线安静的光。`,
+rightFrag.onclick = () => {
+    current = (current + 1) % images.length;
+    document.getElementById("tearPath").setAttribute("d", randomTearPath());
+    updateFragments();
+};
 
-        `听见你说“${text}”的时候，  
-我突然觉得，记忆这件事真浪漫。  
-因为它把你的情绪妥善地藏在柔软的地方。`,
 
-        `原来你今天心里装着“${text}”。  
-谢谢你愿意说给我听。  
-你所有的感受，都值得被轻轻接住。`
-    ];
-    return replyTemplates[Math.floor(Math.random()*replyTemplates.length)];
+/* ============================================================
+   🎤 5. 语音识别（点击开始→再点击结束）
+============================================================ */
+let recognition = null;
+let listening = false;
+let conversation = []; // 用于生成日志
+
+const diaryText = document.getElementById("diaryText");
+const micBtn = document.getElementById("mic-button");
+
+if ("webkitSpeechRecognition" in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = "zh-CN";
+    recognition.continuous = false;
 }
 
-/* ================ 4. Save Memory ================ */
+micBtn.onclick = () => {
+    if (!recognition) {
+        alert("你的浏览器不支持语音识别（建议使用 Chrome）");
+        return;
+    }
+
+    if (!listening) {
+        listening = true;
+        micBtn.style.background = "rgba(255,120,120,0.4)";
+        diaryText.value = "🎤 正在听你说...\n";
+        recognition.start();
+
+        recognition.onresult = (e) => {
+            const text = e.results[0][0].transcript;
+            diaryText.value += `你说：${text}\n`;
+
+            // 存入对话
+            conversation.push({ you: text });
+
+            // AI 自动回复
+            const reply = aiReply(text);
+            diaryText.value += `回声：${reply}\n\n`;
+
+            conversation.push({ ai: reply });
+        };
+
+    } else {
+        listening = false;
+        micBtn.style.background = "rgba(255,255,255,0.25)";
+        recognition.stop();
+    }
+};
+
+
+/* ============================================================
+   💬 6. AI 温柔文学风回答（本地生成，无需服务器）
+============================================================ */
+function aiReply(text) {
+    const replies = [
+        `你刚说的每一个字，都像是落进夜色里的微光。我听见了，也在陪着你。`,
+        `你大概没有察觉，你说这句话时情绪轻轻颤了一下，很真实，也很动人。`,
+        `你的心事不重，只是你一个人拿得太久了。你愿意的话，我可以一直听。`,
+        `你这样说的时候，我突然觉得你是离星光最近的人之一。`,
+        `我能感到你现在的心跳变得柔软了些，那很好，你正在慢慢放松。`,
+        `谢谢你愿意告诉我这些，我把它们放在梦境里最柔软的角落里。`
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
+}
+
+
+/* ============================================================
+   📝 7. 自动生成治愈梦境日志
+============================================================ */
+function generateDiary() {
+    let lines = [];
+
+    lines.push("🌙 梦境治愈日志\n");
+    lines.push("——————————————\n");
+
+    conversation.forEach(msg => {
+        if (msg.you) lines.push(`你：${msg.you}\n`);
+        if (msg.ai) lines.push(`回声：${msg.ai}\n`);
+    });
+
+    lines.push(`
+在所有这些轻声的对话里，
+我看到你像在黑夜中慢慢摸到一束柔软的光。
+你的情绪不是负担，而是让你成为你自己的风。
+而今晚的风里，有光，也有你。
+
+愿你带着这份轻柔继续向前，
+愿黎明来的时候，你已经不再害怕。
+`);
+
+    diaryText.value = lines.join("");
+}
+
+document.getElementById("copyDiary").onclick = () => {
+    generateDiary();
+    diaryText.select();
+    document.execCommand("copy");
+    alert("日记已复制🌙");
+};
 
 document.getElementById("saveDiary").onclick = () => {
-    const blob = new Blob([diary], {type:"text/plain"});
-    const url = URL.createObjectURL(blob);
+    generateDiary();
+    const blob = new Blob([diaryText.value], {type: "text/plain"});
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "MemoryDiary.txt";
+    a.href = URL.createObjectURL(blob);
+    a.download = `梦境治愈日志-${Date.now()}.txt`;
     a.click();
 };
