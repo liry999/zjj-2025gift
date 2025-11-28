@@ -1,156 +1,287 @@
-body {
-    margin: 0;
-    overflow: hidden;
-    background: #000;
-    font-family: "Zhi Mang Xing", "La Belle Aurore", cursive;
-    user-select: none;
+/* ===============================
+   🌌 1. 星空深度视差背景（纯JS生成）
+================================ */
+const starCanvas = document.getElementById("starfield");
+const starCtx = starCanvas.getContext("2d");
+
+function resizeCanvas() {
+    starCanvas.width = window.innerWidth;
+    starCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let stars = [];
+const STAR_COUNT = 230;
+
+function initStars() {
+    stars = [];
+    for (let i = 0; i < STAR_COUNT; i++) {
+        stars.push({
+            x: Math.random()*starCanvas.width,
+            y: Math.random()*starCanvas.height,
+            size: Math.random()*1.5 + 0.5,
+            speed: Math.random()*0.2 + 0.05,
+            flicker: Math.random()*0.5 + 0.3,
+            angle: Math.random()*360,
+        });
+    }
 }
 
-/* 🌌 多层星空 */
-.stars {
-    position: fixed;
-    width: 200vw;
-    height: 200vh;
-    background-repeat: repeat;
-    background-size: contain;
-    z-index: -5;
-    opacity: 0.6;
-}
-#stars-layer1 { background-image: url('https://i.imgur.com/Ott6z8H.png'); }
-#stars-layer2 { background-image: url('https://i.imgur.com/6zHfV7f.png'); }
-#stars-layer3 { background-image: url('https://i.imgur.com/U4f8Pq8.png'); }
+function drawStars() {
+    starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
+    for (let s of stars) {
+        // 星星微光（非圆形）
+        const spike = Math.sin(s.angle)*0.6 + 1;
+        const alpha = Math.sin(s.angle*0.05)*0.3 + s.flicker;
 
+        starCtx.fillStyle = `rgba(200,200,255,${alpha})`;
+        starCtx.beginPath();
+        starCtx.moveTo(s.x, s.y);
+        starCtx.lineTo(s.x+spike, s.y-spike);
+        starCtx.lineTo(s.x-spike, s.y+spike);
+        starCtx.closePath();
+        starCtx.fill();
 
-/* 🎤 顶部控制条 */
-#top-controls {
-    position: fixed;
-    top: 15px; left: 15px;
-    display: flex;
-    gap: 12px;
-    z-index: 20;
-}
+        s.x -= s.speed;
+        s.angle += 2;
 
-#apiKeyInput {
-    padding: 6px 12px;
-    border: none;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    width: 260px;
-    border-radius: 8px;
-    outline: none;
+        if (s.x < 0) s.x = starCanvas.width;
+    }
+    requestAnimationFrame(drawStars);
 }
 
-/* 麦克风按钮（无填充线条风格） */
-#mic-btn {
-    width: 48px; height: 48px;
-    position: relative;
-    border: none;
-    background: transparent;
-    cursor: pointer;
+initStars();
+drawStars();
+
+
+/* ============================================
+   🍃 2. 粒子飞散（图片边缘破碎）中等破碎等级
+============================================ */
+const particleCanvas = document.getElementById("particleCanvas");
+const particleCtx = particleCanvas.getContext("2d");
+particleCanvas.width = window.innerWidth;
+particleCanvas.height = window.innerHeight;
+
+let particles = [];
+
+function spawnParticle(x, y) {
+    particles.push({
+        x, y,
+        vx: (Math.random()-0.5)*1.8,
+        vy: (Math.random()-0.5)*1.8,
+        alpha: 1,
+        size: Math.random()*2 + 1,
+        hue: Math.random()*50 + 200
+    });
 }
 
-.mic-circle {
-    position: absolute;
-    width: 48px; height: 48px;
-    border: 2px solid #aaa;
-    border-radius: 50%;
-    transition: 0.2s;
+function drawParticles() {
+    particleCtx.clearRect(0,0,particleCanvas.width,particleCanvas.height);
+    particles = particles.filter(p => p.alpha > 0);
+
+    for (let p of particles) {
+        particleCtx.fillStyle = `hsla(${p.hue}, 70%, 80%, ${p.alpha})`;
+        particleCtx.beginPath();
+        particleCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        particleCtx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.015;
+    }
+
+    requestAnimationFrame(drawParticles);
 }
-.mic-icon {
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -55%);
-    width: 14px; height: 22px;
-    border: 2px solid #aaa;
-    border-radius: 8px;
-    border-bottom: none;
-}
-.mic-icon::after {
-    content: "";
-    position: absolute;
-    bottom: -6px; left: -6px;
-    width: 22px; height: 6px;
-    border-top: 2px solid #aaa;
+drawParticles();
+
+
+/* ============================================
+   🖼 3. 图片撕裂破碎边缘 mask（梦境版）
+============================================ */
+const fragmentCanvas = document.getElementById("fragmentCanvas");
+const fragCtx = fragmentCanvas.getContext("2d");
+fragmentCanvas.width = 380;
+fragmentCanvas.height = 380;
+
+let currentImage = null;
+
+/* 生成撕裂形状 */
+function getIrregularMaskPath() {
+    const w = fragmentCanvas.width;
+    const h = fragmentCanvas.height;
+
+    fragCtx.beginPath();
+    fragCtx.moveTo(0, h*0.2);
+
+    for (let x = 0; x <= w; x += 40) {
+        let y = h/2 + Math.sin(x*0.1)*30 + (Math.random()*20-10);
+        fragCtx.lineTo(x, y);
+    }
+
+    fragCtx.lineTo(w, h*0.8);
+    fragCtx.lineTo(0, h);
+
+    fragCtx.closePath();
 }
 
-/* 🌙 中心图像（撕裂边缘） */
-#memory-container {
-    position: fixed;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 350px; height: 350px;
+/* 绘制撕裂碎片并触发粒子 */
+function renderFragment() {
+    if (!currentImage) return;
+
+    fragCtx.clearRect(0,0,fragmentCanvas.width, fragmentCanvas.height);
+
+    fragCtx.save();
+
+    // mask
+    getIrregularMaskPath();
+    fragCtx.clip();
+
+    // draw img
+    fragCtx.drawImage(currentImage, 0, 0, fragmentCanvas.width, fragmentCanvas.height);
+
+    fragCtx.restore();
+
+    // 边缘发粒子
+    for (let i = 0; i < 6; i++) {
+        let x = Math.random()*fragmentCanvas.width + (window.innerWidth/2 - 190);
+        let y = (window.innerHeight/2 - 190) + Math.random()*fragmentCanvas.height;
+        spawnParticle(x, y);
+    }
 }
 
-#memory-img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    clip-path: polygon(
-        12% 8%, 88% 5%, 95% 30%,
-        100% 60%, 85% 95%, 20% 100%, 
-        5% 70%, 0% 35%
-    );
-    border-radius: 4px;
-    box-shadow: 0 0 28px rgba(255,255,255,0.35);
+/* 无限次动画刷新 */
+function animateFragments() {
+    renderFragment();
+    requestAnimationFrame(animateFragments);
+}
+animateFragments();
+
+/* ============================================
+   📂 4. 上传任意数量图片
+============================================ */
+const uploadInput = document.getElementById("imgUpload");
+let memoryImages = [];
+let memoryIndex = 0;
+
+uploadInput.addEventListener("change", async e => {
+    const files = Array.from(e.target.files);
+
+    for (const file of files) {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+
+        await new Promise(r => img.onload = r);
+        memoryImages.push(img);
+    }
+
+    if (!currentImage && memoryImages.length > 0) {
+        currentImage = memoryImages[0];
+    }
+});
+
+
+/* ============================================
+   🎤 5. 麦克风 + Web Speech
+============================================ */
+let recognition = null;
+try {
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = "zh-CN";
+    recognition.continuous = false;
+} catch (e) {
+    console.log("浏览器不支持语音");
 }
 
-/* 星光扩散粒子层 */
-#particleCanvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 350px; height: 350px;
-    pointer-events: none;
+const micBtn = document.getElementById("mic-button");
+const logBox = document.getElementById("dialogue-log");
+const diaryBox = document.getElementById("diaryText");
+
+micBtn.onclick = () => {
+    if (!recognition) {
+        alert("请使用 Chrome 浏览器体验语音对话");
+        return;
+    }
+
+    recognition.start();
+    appendLog("（倾听中…）");
+};
+
+recognition.onresult = e => {
+    let text = e.results[0][0].transcript;
+    appendLog("你：" + text);
+    askAI(text);
+};
+
+
+/* ============================================
+   💬 6. 单张图片独立对话 + AI 日记生成
+============================================ */
+let apiKey = "";
+document.getElementById("apiKeyInput").onchange = e => {
+    apiKey = e.target.value.trim();
+};
+
+function appendLog(msg) {
+    logBox.innerHTML += `<div>${msg}</div>`;
+    logBox.scrollTop = logBox.scrollHeight;
 }
 
-/* 左右导航 */
-#left-nav, #right-nav {
-    position: fixed;
-    top: 50%;
-    width: 140px; height: 140px;
-    border-radius: 50%;
-    opacity: 0.4;
-    filter: blur(2px);
-    background-size: cover;
-    background-position: center;
-    transition: 0.3s;
-}
-#left-nav {
-    left: 6%;
-}
-#right-nav {
-    right: 6%;
+/* AI 调用 */
+async function askAI(userText) {
+    if (!apiKey) {
+        appendLog("（请先输入 API Key）");
+        return;
+    }
+
+    const prompt = `
+你是一个温柔、梦境、文学、治愈混合人格的“梦境碎片守望者”。
+当前图片是第 ${memoryIndex+1} 张记忆碎片，请根据用户的话做出温柔、哲学、亲密但不暧昧的回答。
+
+用户说：${userText}
+`;
+
+    appendLog("AI：思考中…");
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type":"application/json",
+            "Authorization":`Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model:"gpt-4o-mini",
+            messages:[{role:"user", content:prompt}]
+        })
+    });
+
+    const data = await res.json();
+    let reply = data.choices?.[0]?.message?.content || "（AI 无回复）";
+
+    appendLog("AI：" + reply);
+
+    // 更新日记（根据对话实时生成）
+    diaryBox.value = 
+`【梦境碎片 #${memoryIndex+1}】
+
+你说：
+${userText}
+
+梦境回应你：
+${reply}
+
+这些话语被轻轻放进今晚的黑夜里，
+成为你独有的一段温柔记忆。
+`;
 }
 
-/* 文学对话框 */
-#dialogue-box {
-    position: fixed;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 70%;
-    max-width: 700px;
-    color: #eee;
-    font-size: 22px;
-    text-align: center;
-    white-space: pre-line;
-    line-height: 1.7;
-    text-shadow: 0 0 6px rgba(255,255,255,0.5);
-}
-
-/* Save Memory 按钮（幽灵按钮） */
-#saveBtn {
-    position: fixed;
-    bottom: 20px;
-    right: 45px;
-    padding: 8px 20px;
-    font-size: 20px;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: .25s;
-    font-family: "La Belle Aurore", cursive;
-}
-#saveBtn:hover {
-    opacity: 1;
-    transform: scale(1.08);
-}
+/* ============================================
+   💾 7. 保存日记
+============================================ */
+document.getElementById("saveMemory").onclick = () => {
+    const blob = new Blob([diaryBox.value], {type:"text/plain"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `memory-${memoryIndex+1}.txt`;
+    a.click();
+};
