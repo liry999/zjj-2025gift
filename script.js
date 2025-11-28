@@ -1,15 +1,28 @@
-/* ================================
-   1. 点击墙体 → 裂开 → 展示内容
-================================ */
-document.getElementById("wall-container").onclick = () => {
-    document.getElementById("crack-layer").classList.remove("hidden");
+// =============== 🚪 大门开启动画 ===============
+const gateLeft = document.querySelector(".gate-left");
+const gateRight = document.querySelector(".gate-right");
+const gateContainer = document.getElementById("gate-container");
+const content = document.getElementById("content");
+const clickHint = document.getElementById("click-hint");
 
+let gateOpened = false;
+
+gateContainer.addEventListener("click", () => {
+    if (gateOpened) return;
+    gateOpened = true;
+
+    // 左右两门打开
+    gateLeft.classList.add("gate-open-left");
+    gateRight.classList.add("gate-open-right");
+
+    clickHint.style.opacity = 0;
+
+    // 内容区显示
     setTimeout(() => {
-        document.getElementById("wall-container").classList.add("hidden");
-        document.getElementById("crack-layer").classList.add("hidden");
-        document.getElementById("content").classList.remove("hidden");
-    }, 1500);
-};
+        content.classList.remove("hidden");
+        gateContainer.style.display = "none";
+    }, 1800);
+});
 
 /* ================================
    2. 图片上传 → 在画布呼吸动画
