@@ -1,87 +1,180 @@
+/* ---------------------------------------------------
+   🌌 全局
+--------------------------------------------------- */
 body {
     margin: 0;
     overflow: hidden;
-    background: black;
-    font-family: "Helvetica", sans-serif;
+    background: #000;
+    font-family: "Dancing Script", "Long Cang", "Microsoft YaHei", sans-serif;
+    color: #eee;
 }
 
-/* 🌌 粒子背景 */
-#bg {
+/* ---------------------------------------------------
+   🌌 梦境背景粒子
+--------------------------------------------------- */
+#bgCanvas {
     position: fixed;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -10;
+    background: radial-gradient(circle at center, #101020, #000);
 }
 
-/* 🌙 梦境回廊 */
-#gallery-container {
+/* ---------------------------------------------------
+   🌀 中心记忆碎片（撕裂不规则形状）
+--------------------------------------------------- */
+#memory-center {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 2;
-}
-
-.dream-img {
-    width: 380px;
-    height: 380px;
-    object-fit: cover;
-    border-radius: 50%;
-    box-shadow: 0 0 30px 10px rgba(180, 200, 255, 0.6);
-    border: 5px solid rgba(255, 255, 255, 0.4);
-    animation: float 4s ease-in-out infinite;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -53%);
+    width: 300px;
+    height: 300px;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: auto;
 }
 
 @keyframes float {
-    0%,100% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
+    0% { transform: translate(-50%, -54%); }
+    50% { transform: translate(-50%, -50%); }
+    100% { transform: translate(-50%, -54%); }
 }
 
-.hint {
+/* 主图不规则撕裂裁剪 */
+#memory-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    /* 使用 SVG path 当撕裂 mask */
+    clip-path: url(#clipTear);
+
+    /* 轻柔发光 */
+    box-shadow:
+        0 0 30px rgba(200, 200, 255, 0.4),
+        0 0 60px rgba(160, 160, 255, 0.25),
+        inset 0 0 40px rgba(255, 255, 255, 0.15);
+}
+
+/* 粒子发光层（canvas） */
+#glowCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------
+   🎤 麦克风按钮
+--------------------------------------------------- */
+#mic-button {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px;
+    font-size: 24px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#mic-button:hover {
+    transform: translateX(-50%) scale(1.15);
+    background: rgba(255,255,255,0.35);
+}
+
+/* ---------------------------------------------------
+   👁 左右碎片预览
+--------------------------------------------------- */
+.side-fragment {
     position: absolute;
     top: 50%;
+    width: 180px;
+    height: 180px;
     transform: translateY(-50%);
-    font-size: 40px;
-    color: white;
-    cursor: pointer;
-    opacity: 0.7;
-    user-select: none;
+    border-radius: 12%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(1px) brightness(0.7);
+    opacity: 0.75;
+    clip-path: polygon(
+        10% 0%, 90% 0%, 100% 20%, 95% 40%, 100% 60%,
+        90% 90%, 50% 100%, 10% 90%, 0% 60%, 5% 35%, 0% 10%
+    );
+    transition: 0.3s;
 }
 
-#left-hint { left: -70px; }
-#right-hint { right: -70px; }
+#side-left { left: 6%; }
+#side-right { right: 6%; }
 
-.hint:hover {
-    opacity: 1;
+.side-fragment:hover {
+    filter: blur(0px) brightness(1);
+    transform: translateY(-50%) scale(1.05);
 }
 
-/* 麦克风 */
-#mic-area {
-    margin-top: 20px;
-}
+/* ---------------------------------------------------
+   📝 日记面板
+--------------------------------------------------- */
+#diary-panel {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    max-width: 650px;
 
-#micBtn {
-    font-size: 24px;
-    padding: 10px 20px;
+    background: rgba(15,15,25,0.55);
+    border: 1px solid rgba(180,180,255,0.45);
     border-radius: 12px;
-    border: none;
-    cursor: pointer;
+    padding: 16px;
+
+    box-shadow: 0 0 20px rgba(160,160,255,0.25);
+    backdrop-filter: blur(8px);
 }
 
-/* 日志输出 */
-#diary-output {
-    margin-top: 20px;
-    color: #eee;
-    width: 380px;
-}
-
-/* 上传图片框 */
-#upload-box {
-    position: fixed;
-    bottom: 20px;
-    width: 100%;
+#diary-panel h3 {
+    margin-top: 0;
+    font-size: 26px;
+    font-family: "Dancing Script";
+    letter-spacing: 1px;
     text-align: center;
-    color: white;
-    z-index: 3;
+    color: #e5e5ff;
+}
+
+#diaryText {
+    width: 100%;
+    height: 160px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(120,120,170,0.5);
+    border-radius: 10px;
+    color: #ddd;
+    padding: 12px;
+    font-size: 18px;
+    font-family: "Long Cang", cursive;
+    resize: vertical;
+}
+
+.buttons {
+    margin-top: 10px;
+    text-align: right;
+}
+
+button {
+    font-family: "Dancing Script";
+    padding: 8px 16px;
+    font-size: 20px;
+    background: rgba(60,60,100,0.6);
+    border: 1px solid rgba(120,120,200,0.6);
+    border-radius: 8px;
+    color: #eee;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+button:hover {
+    background: rgba(90,90,150,0.7);
 }
