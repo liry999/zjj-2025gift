@@ -1,116 +1,135 @@
-/* ============================================
-   ✨ 1. 深空粒子背景（带视差+拖尾）
-============================================ */
+/* ============================
+   🌌 1. 粒子梦境背景
+============================ */
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
 
-function resize() {
+function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
-resize();
-window.onresize = resize;
+resizeCanvas();
+window.onresize = resizeCanvas;
 
-// 多层粒子
-let layers = [];
-for (let d = 1; d <= 3; d++) {
-    let arr = [];
-    for (let i = 0; i < 80; i++)
-        arr.push({
-            x: Math.random()*canvas.width,
-            y: Math.random()*canvas.height,
-            s: Math.random()*2 + d,
-            dx: (Math.random()-0.5) * (0.1*d),
-            dy: (Math.random()-0.5) * (0.1*d)
-        });
-    layers.push(arr);
+let stars = [];
+for (let i = 0; i < 150; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 2,
+        dx: (Math.random() - 0.5) * 0.2,
+        dy: (Math.random() - 0.5) * 0.2
+    });
 }
 
-function drawBG() {
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+function animate() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    layers.forEach(layer => {
-        ctx.fillStyle = "rgba(180,180,255,0.8)";
-        layer.forEach(p => {
-            ctx.beginPath();
-            ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
-            ctx.fill();
-            p.x+=p.dx; p.y+=p.dy;
-            if(p.x<0||p.x>canvas.width) p.dx*=-1;
-            if(p.y<0||p.y>canvas.height) p.dy*=-1;
-        });
+    ctx.fillStyle = "white";
+    stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        s.x += s.dx;
+        s.y += s.dy;
+
+        if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+        if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
     });
 
-    requestAnimationFrame(drawBG);
+    requestAnimationFrame(animate);
 }
-drawBG();
+animate();
 
 
-/* ============================================
-   🌟 2. 3D 星环（多图自动旋转）
-============================================ */
+/* ============================
+   🌙 2. 图片轮播（多张图）
+============================ */
 let imgs = [
     "images/p1.jpg",
     "images/p2.jpg",
     "images/p3.jpg"
 ];
 
-const ring = document.getElementById("star-ring");
+let index = 0;
+const mainImg = document.getElementById("main-img");
 
-function createStarRing() {
-    const count = imgs.length;
-    const angleStep = 360 / count;
-
-    for (let i = 0; i < count; i++) {
-        let img = document.createElement("img");
-        img.src = imgs[i];
-        img.className = "star-img";
-
-        let angle = angleStep * i;
-        img.style.transform =
-            `rotateY(${angle}deg) translateZ(240px)`;
-
-        ring.appendChild(img);
-    }
+function showImage() {
+    mainImg.src = imgs[index];
 }
-createStarRing();
+showImage();
 
-// 自动旋转
-let rotation = 0;
-function rotateRing() {
-    rotation += 0.2;
-    ring.style.transform =
-        `translate(-50%, -50%) rotateY(${rotation}deg)`;
-    requestAnimationFrame(rotateRing);
-}
-rotateRing();
+// 左右切换
+document.getElementById("left-hint").onclick = () => {
+    index = (index - 1 + imgs.length) % imgs.length;
+    showImage();
+};
+document.getElementById("right-hint").onclick = () => {
+    index = (index + 1) % imgs.length;
+    showImage();
+};
 
 
-/* ============================================
-   🎤 3. 麦克风语音生成日记
-============================================ */
+/* ============================
+   📤 3. 上传图片加入梦境轮播
+============================ */
+document.getElementById("uploadImg").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    imgs.push(url);
+    index = imgs.length - 1;
+    showImage();
+});
+
+
+/* ============================
+   🎤 4. 麦克风语音 + 日志生成
+============================ */
 let recognition;
-const diary = document.getElementById("diary");
+let listening = false;
 const micBtn = document.getElementById("micBtn");
+const diaryOut = document.getElementById("diary-output");
 
 if ("webkitSpeechRecognition" in window) {
     recognition = new webkitSpeechRecognition();
     recognition.lang = "zh-CN";
+    recognition.continuous = false;
 
-    recognition.onresult = e => {
-        const text = e.results[0][0].transcript;
-        diary.innerHTML =
-            `🌙 <b>梦境回廊日志</b><br><br>
-            你轻轻说：<b>“${text}”</b><br><br>
-            那句话像一颗缓慢飘落的星，
-            被这个梦境温柔收藏。
-            `;
+    recognition.onresult = event => {
+        const text = event.results[0][0].transcript;
+
+        diaryOut.innerHTML =
+            "🌙 <b>梦境日志：</b><br><br>" +
+            generateDiary(text);
     };
 }
 
 micBtn.onclick = () => {
-    if (!recognition) return alert("浏览器不支持语音识别🙏");
-    recognition.start();
+    if (!recognition) return alert("你的浏览器不支持语音识别");
+
+    if (!listening) {
+        listening = true;
+        micBtn.innerText = "🎤 录音中…";
+        recognition.start();
+    } else {
+        listening = false;
+        micBtn.innerText = "🎤";
+        recognition.stop();
+    }
 };
-v
+
+/* 生成温柔治愈风日志 */
+function generateDiary(text) {
+    return `
+    你刚才说：“${text}”。<br><br>
+    在这个静悄悄的夜晚，你的心声像一片慢慢飘落的光，
+    被梦境温柔地接住。<br><br>
+    也许世界嘈杂、也许白昼漫长，
+    但此刻，你的情绪被认真收藏，
+    像一枚在记忆廊道里闪光的碎片。
+    `;
+}
