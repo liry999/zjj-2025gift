@@ -2,47 +2,36 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>张嘉嘉的25岁生日礼物:梦境记忆回廊 · Gift</title>
+    <title>Memory Fragments · 梦境碎片回廊</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <!-- 星空背景 -->
-<canvas id="starfield"></canvas>
+<canvas id="starCanvas"></canvas>
 
-<!-- 图片展示区域 -->
-<div id="gallery-container">
-    <canvas id="imageCanvas"></canvas>
-
-    <!-- 麦克风 + Save Memory 按钮 -->
-    <div id="controls">
-        <div id="mic-button">
-            <svg width="40" height="40" viewBox="0 0 24 24" stroke="#ffffff55" fill="none" stroke-width="2">
-                <circle cx="12" cy="12" r="10" stroke="#ffffff66"/>
-                <path d="M12 15a3 3 0 0 0 3-3V9a3 3 0 0 0-6 0v3a3 3 0 0 0 3 3z"/>
-                <path d="M19 11a7 7 0 0 1-14 0"/>
-                <line x1="12" y1="18" x2="12" y2="22"/>
-                <line x1="8" y1="22" x2="16" y2="22"/>
-            </svg>
-        </div>
-
-        <button id="saveMemory">Save Memory</button>
-    </div>
-
-    <!-- 用户上传图片 -->
-    <div id="upload-box">
-        <input type="file" id="uploadImage" accept="image/*">
-    </div>
+<!-- 中心碎片 -->
+<div id="memory-center">
+    <canvas id="maskCanvas"></canvas>
+    <img id="memory-img" src="images/p1.jpg">
 </div>
 
-<!-- 对话输出区域 -->
-<div id="dialog-output"></div>
+<!-- 左右记忆碎片 -->
+<div id="side-left" class="side-fragment"></div>
+<div id="side-right" class="side-fragment"></div>
 
-<!-- API Key 输入 -->
-<div id="apikey-panel">
-    <p>请输入你的 OpenAI API Key：</p>
-    <input id="apikey-input" placeholder="sk-xxxx">
-    <button id="save-apikey">OK</button>
+<!-- 麦克风 + 日记 -->
+<div id="bottom-bar">
+    <div id="mic-wrapper">
+        <div id="mic-circle"></div>
+        <div id="mic-icon">🎤</div>
+    </div>
+    <button id="saveDiary">Save Memory</button>
+</div>
+
+<!-- 日记区 -->
+<div id="diary-panel">
+    <textarea id="diaryText" placeholder="日记会写在这里..."></textarea>
 </div>
 
 <script src="script.js"></script>
