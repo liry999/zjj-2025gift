@@ -8,19 +8,18 @@
 <body>
 
 <!-- ===================== -->
-<!-- 🎬 巨墙升起动画 -->
+<!-- 🚪 大门动画（代替巨墙） -->
 <!-- ===================== -->
-<div id="wall-container">
-    <img id="wall" src="https://images.unsplash.com/photo-1505507678235-50bb4ae6c44d?auto=format&fit=crop&w=1350&q=80" alt="Wall">
+<div id="gate-container">
 
-    <div id="click-hint">点击墙体开启惊喜</div>
-</div>
+    <!-- 左扇门 -->
+    <div class="gate gate-left"></div>
 
-<!-- ===================== -->
-<!-- 💥 裂开层 -->
-<!-- ===================== -->
-<div id="crack-layer" class="hidden">
-    <img id="crack-img" src="https://cdn.jsdelivr.net/gh/edent/SuperTinyIcons/images/svg/error.svg" />
+    <!-- 右扇门 -->
+    <div class="gate gate-right"></div>
+
+    <!-- 点击提示 -->
+    <div id="click-hint">点击大门开启惊喜</div>
 </div>
 
 <!-- ===================== -->
@@ -43,9 +42,7 @@
 
     <canvas id="artCanvas" width="500" height="500"></canvas>
 
-    <!-- ===================== -->
     <!-- 🎵 背景音乐上传 -->
-    <!-- ===================== -->
     <div class="upload-section">
         <p>上传你喜欢的背景音乐（mp3/wav）：</p>
         <input type="file" id="musicUpload" accept="audio/*">
@@ -53,9 +50,7 @@
         <button id="musicPause">暂停</button>
     </div>
 
-    <!-- ===================== -->
     <!-- 🎤 语音 + 日记生成 -->
-    <!-- ===================== -->
     <div id="voice-area">
         <p class="title">🎤 对我说说今天的心情吧</p>
         <button id="startVoice">开始录音</button>
