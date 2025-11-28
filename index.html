@@ -2,28 +2,33 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>张嘉嘉 · 25岁生日梦境礼物</title>
+    <title>张嘉嘉的25岁生日礼物</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
+<!-- 🌌 梦境粒子背景 -->
 <canvas id="bg"></canvas>
 
-<!-- 3D 旋转星环 -->
-<div id="star-ring"></div>
+<!-- 🌙 记忆回廊容器 -->
+<div id="gallery-container">
+    <img id="main-img" class="dream-img" src="images/p1.jpg" alt="img">
 
-<!-- 中央照片 -->
-<div id="center-box">
-    <img id="center-img" src="images/p1.jpg">
+    <div id="left-hint" class="hint">◀</div>
+    <div id="right-hint" class="hint">▶</div>
+
+    <div id="mic-area">
+        <button id="micBtn">🎤</button>
+    </div>
+
+    <div id="diary-output"></div>
 </div>
 
-<!-- 麦克风 -->
-<div id="mic-box">
-    <button id="micBtn">🎤</button>
+<!-- 上传图片 -->
+<div id="upload-box">
+    <p>上传你的图片（会加入梦境轮播）</p>
+    <input type="file" id="uploadImg" accept="image/*">
 </div>
-
-<!-- 输出日记 -->
-<div id="diary"></div>
 
 <script src="script.js"></script>
 </body>
