@@ -265,4 +265,36 @@ async function onRecordingStop() {
 /* ============================================================
    Save Memory：生成日志
 ============================================================ */
-const saveButton = document.ge
+const saveButton = document.getElementById("saveMemory");
+
+saveButton.addEventListener("click", async () => {
+    let key = localStorage.getItem("openai_key");
+    if (!key) {
+        alert("请先输入 OpenAI API Key");
+        return;
+    }
+
+    let prompt =
+        persona +
+        "\n请根据下面的完整对话，写一篇温柔、梦境文学风、像夜空一样的日志：\n\n" +
+        conversation.join("\n");
+
+    const diary = await askOpenAI(prompt);
+
+    const blob = new Blob([diary], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "memory_diary.txt";
+    a.click();
+});
+
+/* ============================================================
+   API Key 存储
+============================================================ */
+document.getElementById("save-apikey").addEventListener("click", () => {
+    const k = document.getElementById("apikey-input").value.trim();
+    if (k.length < 10) return alert("Key 格式不太对");
+
+    localStorage.setItem("openai_key", k);
+    alert("已保存 API Key");
+});
