@@ -1,135 +1,146 @@
-// =====================
-// 1. 大门开启动画
-// =====================
-const gateLeft = document.querySelector(".gate-left");
-const gateRight = document.querySelector(".gate-right");
-const gateContainer = document.getElementById("gate-container");
-const content = document.getElementById("content");
-const clickHint = document.getElementById("click-hint");
+/* ===================================
+   🌌 1. 全屏梦境粒子背景
+=================================== */
+const bg = document.getElementById("bgCanvas");
+const ctx = bg.getContext("2d");
 
-let gateOpened = false;
+function resize() {
+    bg.width = window.innerWidth;
+    bg.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
 
-gateContainer.onclick = () => {
-    if (gateOpened) return;
-    gateOpened = true;
-
-    gateLeft.classList.add("gate-open-left");
-    gateRight.classList.add("gate-open-right");
-    clickHint.style.opacity = 0;
-
-    setTimeout(() => {
-        gateContainer.style.display = "none";
-        content.classList.remove("hidden");
-    }, 1800);
-};
-
-
-// =====================
-// 2. 上传图片 → 呼吸动画
-// =====================
-const canvas = document.getElementById("artCanvas");
-const ctx = canvas.getContext("2d");
-const imgUpload = document.getElementById("imgUpload");
-
-let artImage = null;
-let t = 0;
-
-imgUpload.onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = () => {
-        artImage = new Image();
-        artImage.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-};
-
-function animate() {
-    requestAnimationFrame(animate);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (artImage) {
-        const scale = 1 + Math.sin(t) * 0.02;
-        const w = 400 * scale;
-        const h = 400 * scale;
-
-        ctx.drawImage(
-            artImage,
-            canvas.width/2 - w/2,
-            canvas.height/2 - h/2,
-            w, h
-        );
-        t += 0.03;
-    }
+let particles = [];
+for (let i = 0; i < 150; i++) {
+    particles.push({
+        x: Math.random()*bg.width,
+        y: Math.random()*bg.height,
+        r: Math.random()*2 + 1,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        alpha: Math.random()*0.5 + 0.3
+    });
 }
 
-animate();
+function drawParticles() {
+    ctx.clearRect(0,0,bg.width,bg.height);
+    for (let p of particles) {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(170,170,255,${p.alpha})`;
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x<0||p.x>bg.width) p.vx*=-1;
+        if (p.y<0||p.y>bg.height) p.vy*=-1;
+    }
+    requestAnimationFrame(drawParticles);
+}
+drawParticles();
 
 
-// =====================
-// 3. 背景音乐上传
-// =====================
-let music = null;
+/* ===================================
+   🌀 2. 记忆碎片左右切换 + 漂浮效果
+=================================== */
+const images = ["images/p1.jpg","images/p2.jpg","images/p3.jpg"];
+let current = 0;
 
-document.getElementById("musicUpload").onchange = e => {
-    const file = e.target.files[0];
-    const url = URL.createObjectURL(file);
-    music = new Audio(url);
+const centerImg = document.getElementById("memory-img");
+const leftFrag = document.getElementById("side-left");
+const rightFrag = document.getElementById("side-right");
+
+function updateFragments() {
+    centerImg.src = images[current];
+    leftFrag.style.backgroundImage = `url(${images[(current - 1 + images.length)%images.length]})`;
+    rightFrag.style.backgroundImage = `url(${images[(current + 1)%images.length]})`;
+}
+updateFragments();
+
+/* 鼠标移动控制切换 */
+document.addEventListener("mousemove", e => {
+    let mid = window.innerWidth / 2;
+
+    if (e.clientX < mid - 120) {
+        leftFrag.style.transform = "translateY(-50%) scale(1.1)";
+        rightFrag.style.transform = "translateY(-50%) scale(1)";
+    } else if (e.clientX > mid + 120) {
+        rightFrag.style.transform = "translateY(-50%) scale(1.1)";
+        leftFrag.style.transform = "translateY(-50%) scale(1)";
+    }
+});
+
+/* 左右点击切换 */
+leftFrag.onclick = () => {
+    current = (current - 1 + images.length) % images.length;
+    updateFragments();
 };
 
-document.getElementById("musicPlay").onclick = () => {
-    if (music) music.play();
-};
-
-document.getElementById("musicPause").onclick = () => {
-    if (music) music.pause();
+rightFrag.onclick = () => {
+    current = (current + 1) % images.length;
+    updateFragments();
 };
 
 
-// =====================
-// 4. 语音识别
-// =====================
+/* ===================================
+   🎤 3. 语音识别
+=================================== */
 let recognition = null;
+const diaryText = document.getElementById("diaryText");
+
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
     recognition.lang = "zh-CN";
-    recognition.continuous = false;
 }
 
-document.getElementById("startVoice").onclick = () => {
+document.getElementById("mic-button").onclick = () => {
     if (!recognition) {
-        alert("当前浏览器不支持语音识别（推荐 Chrome）");
+        alert("你的浏览器不支持语音识别(建议 Chrome)");
         return;
     }
-    const voiceText = document.getElementById("voiceText");
-    voiceText.innerHTML = "🎤 正在听你说…";
 
+    diaryText.value = "🎤 正在倾听你的声音...\n";
     recognition.start();
-    recognition.onresult = (event) => {
+
+    recognition.onresult = event => {
         let text = event.results[0][0].transcript;
-        voiceText.innerHTML = "你说：" + text;
+        diaryText.value =
+`🌙 温柔治愈日记（记忆碎片 ${current+1}）
+
+你轻轻地说：“${text}”。
+
+在梦境的记忆回廊中，这幅被光照亮的碎片开始微微发热。
+你的声音像一条温柔的河流，
+带着一点点疲惫，
+一点点希冀，
+还有只有你才拥有的那份柔软。
+
+愿你把今天的风景都放进心里，
+愿所有疲惫都在今晚慢慢溶解。
+
+你值得被听见，
+也值得被温柔以待。
+`;
     };
 };
 
 
-// =====================
-// 5. 日记生成
-// =====================
-document.getElementById("makeDiary").onclick = () => {
-    const voiceText = document.getElementById("voiceText").innerText.replace("你说：", "");
-    const diaryOutput = document.getElementById("diaryOutput");
+/* ===================================
+   📝 4. 日记复制 & 保存
+=================================== */
+document.getElementById("copyDiary").onclick = () => {
+    diaryText.select();
+    document.execCommand("copy");
+    alert("已复制到剪贴板(*˘︶˘*)♡");
+};
 
-    if (!voiceText.trim()) {
-        diaryOutput.innerHTML = "请先说点什么~";
-        return;
-    }
+document.getElementById("saveDiary").onclick = () => {
+    const blob = new Blob([diaryText.value], {type:"text/plain"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
 
-    diaryOutput.innerHTML = `
-    🌙 <b>温柔治愈日记：</b><br><br>
-    今天你说：“${voiceText}”。<br><br>
-    在这扇大门之后，是一个只为你亮起的温柔空间。<br><br>
-    愿今晚的风替我抱抱你，  
-    愿你的情绪被世界温柔以待。
-    `;
+    a.href = url;
+    a.download = `温柔日记-${current+1}.txt`;
+    a.click();
 };
