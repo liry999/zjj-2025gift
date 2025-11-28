@@ -164,6 +164,18 @@ const uploadInput = document.getElementById("imgUpload");
 let memoryImages = [];
 let memoryIndex = 0;
 
+;(()=>{
+    const defaults = ["images/p1.jpg","images/p2.jpg","images/p3.jpg"];
+    for (let url of defaults) {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => {
+            memoryImages.push(img);
+            if (!currentImage) currentImage = img;
+        }
+    }
+})();
+
 uploadInput.addEventListener("change", async e => {
     const files = Array.from(e.target.files);
 
