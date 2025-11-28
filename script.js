@@ -1,4 +1,6 @@
-// =============== 🚪 大门开启动画 ===============
+// =====================
+// 1. 大门开启动画
+// =====================
 const gateLeft = document.querySelector(".gate-left");
 const gateRight = document.querySelector(".gate-right");
 const gateContainer = document.getElementById("gate-container");
@@ -7,26 +9,24 @@ const clickHint = document.getElementById("click-hint");
 
 let gateOpened = false;
 
-gateContainer.addEventListener("click", () => {
+gateContainer.onclick = () => {
     if (gateOpened) return;
     gateOpened = true;
 
-    // 左右两门打开
     gateLeft.classList.add("gate-open-left");
     gateRight.classList.add("gate-open-right");
-
     clickHint.style.opacity = 0;
 
-    // 内容区显示
     setTimeout(() => {
-        content.classList.remove("hidden");
         gateContainer.style.display = "none";
+        content.classList.remove("hidden");
     }, 1800);
-});
+};
 
-/* ================================
-   2. 图片上传 → 在画布呼吸动画
-================================ */
+
+// =====================
+// 2. 上传图片 → 呼吸动画
+// =====================
 const canvas = document.getElementById("artCanvas");
 const ctx = canvas.getContext("2d");
 const imgUpload = document.getElementById("imgUpload");
@@ -66,9 +66,10 @@ function animate() {
 
 animate();
 
-/* ================================
-   3. 背景音乐上传与控制
-================================ */
+
+// =====================
+// 3. 背景音乐上传
+// =====================
 let music = null;
 
 document.getElementById("musicUpload").onchange = e => {
@@ -85,14 +86,11 @@ document.getElementById("musicPause").onclick = () => {
     if (music) music.pause();
 };
 
-/* ================================
-   4. 语音识别 + 日记生成
-================================ */
-const voiceText = document.getElementById("voiceText");
-const diaryOutput = document.getElementById("diaryOutput");
 
+// =====================
+// 4. 语音识别
+// =====================
 let recognition = null;
-
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
     recognition.lang = "zh-CN";
@@ -104,36 +102,34 @@ document.getElementById("startVoice").onclick = () => {
         alert("当前浏览器不支持语音识别（推荐 Chrome）");
         return;
     }
-
+    const voiceText = document.getElementById("voiceText");
     voiceText.innerHTML = "🎤 正在听你说…";
-    recognition.start();
 
+    recognition.start();
     recognition.onresult = (event) => {
         let text = event.results[0][0].transcript;
         voiceText.innerHTML = "你说：" + text;
     };
 };
 
-/* ================================
-   5. 生成治愈系日记
-================================ */
-document.getElementById("makeDiary").onclick = () => {
-    const text = voiceText.innerText.replace("你说：", "").trim();
 
-    if (!text) {
+// =====================
+// 5. 日记生成
+// =====================
+document.getElementById("makeDiary").onclick = () => {
+    const voiceText = document.getElementById("voiceText").innerText.replace("你说：", "");
+    const diaryOutput = document.getElementById("diaryOutput");
+
+    if (!voiceText.trim()) {
         diaryOutput.innerHTML = "请先说点什么~";
         return;
     }
 
     diaryOutput.innerHTML = `
-        <p style="line-height:1.8;">
-        🌙 <b>温柔治愈日记：</b><br><br>
-        今天的你说：“${text}”。<br><br>
-        在这面从静默中开启的玛利亚之墙后，  
-        藏着一个温柔的世界，也藏着你悄悄的心事。<br><br>
-        愿这些轻轻的话语，被夜风听见；  
-        愿你的每一份情绪，都被善良温柔地接住。<br><br>
-        世界辽阔，而你值得一切柔光与善意。  
-        </p>
+    🌙 <b>温柔治愈日记：</b><br><br>
+    今天你说：“${voiceText}”。<br><br>
+    在这扇大门之后，是一个只为你亮起的温柔空间。<br><br>
+    愿今晚的风替我抱抱你，  
+    愿你的情绪被世界温柔以待。
     `;
 };
