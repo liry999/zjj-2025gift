@@ -1,41 +1,56 @@
-/* ============ 🚪 巨门开启动画 ============ */
+body {
+    margin: 0;
+    background: #000;
+    font-family: "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+}
 
+/* ============ 🚪 巨门 ============ */
 #gate-container {
     position: relative;
     width: 100vw;
     height: 100vh;
+    background: #1a1a1a;
     overflow: hidden;
-    background: radial-gradient(circle at center, #222, #000);
     cursor: pointer;
 }
 
-/* 左右两扇门 */
+/* 左右大门（纯 CSS 生成） */
 .gate {
     position: absolute;
     top: 0;
     width: 50%;
     height: 100%;
-    background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
-    transition: transform 1.8s ease-in-out;
+
+    /* 木质金属混合材质 */
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #4a4a4a 0px,
+            #3a3a3a 5px,
+            #2e2e2e 10px
+        );
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
+    transition: transform 2s ease-in-out;
 }
 
-/* 左门初始位置 */
+/* 初始左门 */
 .gate-left {
     left: 0;
     border-right: 3px solid #000;
 }
 
-/* 右门初始位置 */
+/* 初始右门 */
 .gate-right {
     right: 0;
     border-left: 3px solid #000;
 }
 
-/* 开启时的动画 */
+/* 开启动画 */
 .gate-open-left {
     transform: translateX(-100%);
 }
+
 .gate-open-right {
     transform: translateX(100%);
 }
@@ -46,62 +61,69 @@
     bottom: 20px;
     width: 100%;
     text-align: center;
-    color: #eee;
+    color: #ddd;
     font-size: 20px;
-    letter-spacing: 2px;
-    animation: hintBlink 1.2s infinite;
+    animation: blink 1.3s infinite;
 }
 
-@keyframes hintBlink {
+@keyframes blink {
     0% { opacity: 1; }
-    50% { opacity: .4; }
+    50% { opacity: .3; }
     100% { opacity: 1; }
 }
 
-/* 隐藏内容区 */
+/* ========== 内容区 ========== */
 .hidden {
     display: none;
 }
 
-/* ============ 内容层 ============ */
-#content {
-    padding: 30px;
+#gallery {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
 }
 
-.title {
-    font-size: 28px;
-    margin: 20px 0;
-    color: #ffd;
+.art-img {
+    width: 180px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
 }
 
-#gallery img {
-    width: 160px;
-    margin: 10px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 15px rgba(255,255,255,0.2);
-}
-
+/* 上传区域 */
 .upload-section {
-    margin: 20px;
+    margin: 20px 0;
+    text-align: center;
+    color: #eee;
 }
 
 #artCanvas {
-    width: 500px;
-    height: 500px;
-    background: #000;
-    margin-top: 20px;
-    border-radius: 20px;
-}
-
-/* ============ 日记 ============ */
-#voice-area {
-    margin-top: 40px;
-}
-
-#voiceText, #diaryOutput {
-    width: 70%;
-    margin: 20px auto;
-    padding: 20px;
-    background: rgba(255,255,255,0.1);
+    display: block;
+    margin: 0 auto;
+    background: #222;
     border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+/* 语音文字区 */
+#voiceText, #diaryOutput {
+    margin: 20px;
+    color: #eee;
+    line-height: 1.6;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    background: #444;
+    color: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #666;
 }
