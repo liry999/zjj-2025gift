@@ -1,299 +1,268 @@
-/* ===============================
-   🌌 1. 星空深度视差背景（纯JS生成）
-================================ */
+/* ============================================================
+   星空粒子背景（自动生成）
+============================================================ */
 const starCanvas = document.getElementById("starfield");
 const starCtx = starCanvas.getContext("2d");
 
-function resizeCanvas() {
+function resizeStarField() {
     starCanvas.width = window.innerWidth;
     starCanvas.height = window.innerHeight;
 }
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
+resizeStarField();
+window.addEventListener("resize", resizeStarField);
 
 let stars = [];
-const STAR_COUNT = 230;
-
-function initStars() {
-    stars = [];
-    for (let i = 0; i < STAR_COUNT; i++) {
-        stars.push({
-            x: Math.random()*starCanvas.width,
-            y: Math.random()*starCanvas.height,
-            size: Math.random()*1.5 + 0.5,
-            speed: Math.random()*0.2 + 0.05,
-            flicker: Math.random()*0.5 + 0.3,
-            angle: Math.random()*360,
-        });
-    }
+for (let i = 0; i < 200; i++) {
+    stars.push({
+        x: Math.random() * starCanvas.width,
+        y: Math.random() * starCanvas.height,
+        size: Math.random() * 2 + 0.3,
+        glow: Math.random() * 0.8 + 0.2
+    });
 }
 
 function drawStars() {
-    starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
-    for (let s of stars) {
-        // 星星微光（非圆形）
-        const spike = Math.sin(s.angle)*0.6 + 1;
-        const alpha = Math.sin(s.angle*0.05)*0.3 + s.flicker;
-
-        starCtx.fillStyle = `rgba(200,200,255,${alpha})`;
+    starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+    stars.forEach(s => {
         starCtx.beginPath();
-        starCtx.moveTo(s.x, s.y);
-        starCtx.lineTo(s.x+spike, s.y-spike);
-        starCtx.lineTo(s.x-spike, s.y+spike);
-        starCtx.closePath();
+        starCtx.fillStyle = `rgba(255,255,255,${s.glow})`;
+        starCtx.shadowBlur = 8;
+        starCtx.shadowColor = "#fff";
+        starCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
         starCtx.fill();
-
-        s.x -= s.speed;
-        s.angle += 2;
-
-        if (s.x < 0) s.x = starCanvas.width;
-    }
+    });
     requestAnimationFrame(drawStars);
 }
-
-initStars();
 drawStars();
 
+/* ============================================================
+   图片系统：自动加载 + 上传 + 不规则闪光边缘
+============================================================ */
+const imageCanvas = document.getElementById("imageCanvas");
+const ctx = imageCanvas.getContext("2d");
+const uploadImage = document.getElementById("uploadImage");
 
-/* ============================================
-   🍃 2. 粒子飞散（图片边缘破碎）中等破碎等级
-============================================ */
-const particleCanvas = document.getElementById("particleCanvas");
-const particleCtx = particleCanvas.getContext("2d");
-particleCanvas.width = window.innerWidth;
-particleCanvas.height = window.innerHeight;
+let images = [
+    "images/p1.jpg",
+    "images/p2.jpg",
+    "images/p3.jpg"
+];
+let currentIndex = 0;
 
-let particles = [];
-
-function spawnParticle(x, y) {
-    particles.push({
-        x, y,
-        vx: (Math.random()-0.5)*1.8,
-        vy: (Math.random()-0.5)*1.8,
-        alpha: 1,
-        size: Math.random()*2 + 1,
-        hue: Math.random()*50 + 200
-    });
+/* 载入某张图 */
+function loadImage(src) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+        drawBrokenDream(img);
+    };
+    img.src = src;
 }
+loadImage(images[0]);
 
-function drawParticles() {
-    particleCtx.clearRect(0,0,particleCanvas.width,particleCanvas.height);
-    particles = particles.filter(p => p.alpha > 0);
-
-    for (let p of particles) {
-        particleCtx.fillStyle = `hsla(${p.hue}, 70%, 80%, ${p.alpha})`;
-        particleCtx.beginPath();
-        particleCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        particleCtx.fill();
-
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.015;
+/* 鼠标移动 → 左右切换 */
+document.body.addEventListener("mousemove", (e) => {
+    if (e.clientX < window.innerWidth * 0.3) {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        loadImage(images[currentIndex]);
     }
-
-    requestAnimationFrame(drawParticles);
-}
-drawParticles();
-
-
-/* ============================================
-   🖼 3. 图片撕裂破碎边缘 mask（梦境版）
-============================================ */
-const fragmentCanvas = document.getElementById("fragmentCanvas");
-const fragCtx = fragmentCanvas.getContext("2d");
-fragmentCanvas.width = 380;
-fragmentCanvas.height = 380;
-
-let currentImage = null;
-
-/* 生成撕裂形状 */
-function getIrregularMaskPath() {
-    const w = fragmentCanvas.width;
-    const h = fragmentCanvas.height;
-
-    fragCtx.beginPath();
-    fragCtx.moveTo(0, h*0.2);
-
-    for (let x = 0; x <= w; x += 40) {
-        let y = h/2 + Math.sin(x*0.1)*30 + (Math.random()*20-10);
-        fragCtx.lineTo(x, y);
-    }
-
-    fragCtx.lineTo(w, h*0.8);
-    fragCtx.lineTo(0, h);
-
-    fragCtx.closePath();
-}
-
-/* 绘制撕裂碎片并触发粒子 */
-function renderFragment() {
-    if (!currentImage) return;
-
-    fragCtx.clearRect(0,0,fragmentCanvas.width, fragmentCanvas.height);
-
-    fragCtx.save();
-
-    // mask
-    getIrregularMaskPath();
-    fragCtx.clip();
-
-    // draw img
-    fragCtx.drawImage(currentImage, 0, 0, fragmentCanvas.width, fragmentCanvas.height);
-
-    fragCtx.restore();
-
-    // 边缘发粒子
-    for (let i = 0; i < 6; i++) {
-        let x = Math.random()*fragmentCanvas.width + (window.innerWidth/2 - 190);
-        let y = (window.innerHeight/2 - 190) + Math.random()*fragmentCanvas.height;
-        spawnParticle(x, y);
-    }
-}
-
-/* 无限次动画刷新 */
-function animateFragments() {
-    renderFragment();
-    requestAnimationFrame(animateFragments);
-}
-animateFragments();
-
-/* ============================================
-   📂 4. 上传任意数量图片
-============================================ */
-const uploadInput = document.getElementById("imgUpload");
-let memoryImages = [];
-let memoryIndex = 0;
-
-;(()=>{
-    const defaults = ["images/p1.jpg","images/p2.jpg","images/p3.jpg"];
-    for (let url of defaults) {
-        const img = new Image();
-        img.src = url;
-        img.onload = () => {
-            memoryImages.push(img);
-            if (!currentImage) currentImage = img;
-        }
-    }
-})();
-
-uploadInput.addEventListener("change", async e => {
-    const files = Array.from(e.target.files);
-
-    for (const file of files) {
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-
-        await new Promise(r => img.onload = r);
-        memoryImages.push(img);
-    }
-
-    if (!currentImage && memoryImages.length > 0) {
-        currentImage = memoryImages[0];
+    if (e.clientX > window.innerWidth * 0.7) {
+        currentIndex = (currentIndex + 1) % images.length;
+        loadImage(images[currentIndex]);
     }
 });
 
+/* 上传图片 */
+uploadImage.addEventListener("change", (e) => {
+    if (e.target.files.length === 0) return;
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+        images.push(evt.target.result);
+        currentIndex = images.length - 1;
+        loadImage(images[currentIndex]);
+    };
+    reader.readAsDataURL(e.target.files[0]);
+});
 
-/* ============================================
-   🎤 5. 麦克风 + Web Speech
-============================================ */
-let recognition = null;
-try {
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = "zh-CN";
-    recognition.continuous = false;
-} catch (e) {
-    console.log("浏览器不支持语音");
+/* 绘制撕裂梦境效果 */
+function drawBrokenDream(img) {
+    ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+    let w = imageCanvas.width;
+    let h = imageCanvas.height;
+
+    // 不规则 mask（撕裂效果）
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(40, 20);
+    ctx.lineTo(w - 60, 35);
+    ctx.lineTo(w - 20, h / 2 - 40);
+    ctx.lineTo(w - 50, h - 30);
+    ctx.lineTo(50, h - 20);
+    ctx.lineTo(20, h / 2 + 20);
+    ctx.closePath();
+    ctx.clip();
+
+    ctx.drawImage(img, 0, 0, w, h);
+    ctx.restore();
+
+    drawShiningEdges();
 }
 
-const micBtn = document.getElementById("mic-button");
-const logBox = document.getElementById("dialogue-log");
-const diaryBox = document.getElementById("diaryText");
+/* 星光碎裂边缘 */
+function drawShiningEdges(intensity = 1) {
+    let w = imageCanvas.width;
+    let h = imageCanvas.height;
 
-micBtn.onclick = () => {
-    if (!recognition) {
-        alert("请使用 Chrome 浏览器体验语音对话");
-        return;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    for (let i = 0; i < 80 * intensity; i++) {
+        let x = Math.random() * w;
+        let y = Math.random() * h;
+        let r = Math.random() * 1.8;
+
+        ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.7})`;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
     }
-
-    recognition.start();
-    appendLog("（倾听中…）");
-};
-
-recognition.onresult = e => {
-    let text = e.results[0][0].transcript;
-    appendLog("你：" + text);
-    askAI(text);
-};
-
-
-/* ============================================
-   💬 6. 单张图片独立对话 + AI 日记生成
-============================================ */
-let apiKey = "";
-document.getElementById("apiKeyInput").onchange = e => {
-    apiKey = e.target.value.trim();
-};
-
-function appendLog(msg) {
-    logBox.innerHTML += `<div>${msg}</div>`;
-    logBox.scrollTop = logBox.scrollHeight;
+    ctx.restore();
 }
 
-/* AI 调用 */
-async function askAI(userText) {
-    if (!apiKey) {
-        appendLog("（请先输入 API Key）");
-        return;
-    }
+/* ============================================================
+   音量驱动粒子扩散
+============================================================ */
+let audioContext = null;
+let analyser = null;
+let dataArray = null;
 
-    const prompt = `
-你是一个温柔、梦境、文学、治愈混合人格的“梦境碎片守望者”。
-当前图片是第 ${memoryIndex+1} 张记忆碎片，请根据用户的话做出温柔、哲学、亲密但不暧昧的回答。
+function initVolumeAnalysis(stream) {
+    audioContext = new AudioContext();
+    const source = audioContext.createMediaStreamSource(stream);
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
 
-用户说：${userText}
+function updateVolumeFlash() {
+    if (!analyser) return;
+    analyser.getByteFrequencyData(dataArray);
+    let volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+    drawShiningEdges(volume / 50);
+    requestAnimationFrame(updateVolumeFlash);
+}
+updateVolumeFlash();
+
+/* ============================================================
+   麦克风录音 + OpenAI 对话（梦境文学人格）
+============================================================ */
+const micButton = document.getElementById("mic-button");
+const dialogOutput = document.getElementById("dialog-output");
+
+let mediaRecorder = null;
+let chunks = [];
+let isRecording = false;
+let conversation = [];  // 用于生成最终日志
+
+/* 梦境人格 Prompt */
+const persona =
+`你是一个“温柔梦境哲学碎片AI”，说话风格融合 A+B+C+D：
+A. 治愈、轻柔、像夜晚抱着人心的风
+B. 文学感、比喻多、像在梦中走路
+C. 哲学、沉静、偶尔幽默但不跳脱
+D. 恋爱系的温柔，但不暧昧，只是特别关心对方
+
+你的每一句回复都像星光落在湖面，轻柔、短、但治愈。
 `;
 
-    appendLog("AI：思考中…");
+async function askOpenAI(text) {
+    let key = localStorage.getItem("openai_key");
+    if (!key) {
+        dialogOutput.textContent = "❗ 请先在右下角输入你的 OpenAI API Key";
+        return "（无 Key）";
+    }
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-            "Content-Type":"application/json",
-            "Authorization":`Bearer ${apiKey}`
+            "Authorization": `Bearer ${key}`,
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            model:"gpt-4o-mini",
-            messages:[{role:"user", content:prompt}]
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: persona },
+                { role: "user", content: text }
+            ]
         })
     });
 
-    const data = await res.json();
-    let reply = data.choices?.[0]?.message?.content || "（AI 无回复）";
-
-    appendLog("AI：" + reply);
-
-    // 更新日记（根据对话实时生成）
-    diaryBox.value = 
-`【梦境碎片 #${memoryIndex+1}】
-
-你说：
-${userText}
-
-梦境回应你：
-${reply}
-
-这些话语被轻轻放进今晚的黑夜里，
-成为你独有的一段温柔记忆。
-`;
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "……";
 }
 
-/* ============================================
-   💾 7. 保存日记
-============================================ */
-document.getElementById("saveMemory").onclick = () => {
-    const blob = new Blob([diaryBox.value], {type:"text/plain"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `memory-${memoryIndex+1}.txt`;
-    a.click();
-};
+/* 录音控制 */
+micButton.addEventListener("click", async () => {
+    micButton.classList.add("sound-pulse");
+
+    if (!isRecording) {
+        // 开始录音
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        initVolumeAnalysis(stream);
+
+        mediaRecorder = new MediaRecorder(stream);
+        chunks = [];
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = onRecordingStop;
+        mediaRecorder.start();
+
+        dialogOutput.textContent = "（我在听，你慢慢说……）";
+        isRecording = true;
+    } else {
+        // 停止录音
+        mediaRecorder.stop();
+        isRecording = false;
+        dialogOutput.textContent = "（正在听懂你的话……）";
+    }
+
+    setTimeout(() => micButton.classList.remove("sound-pulse"), 300);
+});
+
+/* 录音结束 → 语音转换文字 → AI回复 */
+async function onRecordingStop() {
+    const blob = new Blob(chunks, { type: "audio/webm" });
+
+    let key = localStorage.getItem("openai_key");
+    if (!key) {
+        dialogOutput.textContent = "❗ 请先在右下角输入你的 OpenAI API Key";
+        return;
+    }
+
+    // Whisper 文本识别
+    const form = new FormData();
+    form.append("file", blob, "audio.webm");
+    form.append("model", "gpt-4o-mini-tts");
+
+    const textRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}` },
+        body: form
+    });
+    const textData = await textRes.json();
+    const userText = textData.text || "（听不太清楚…）";
+
+    dialogOutput.textContent = "你：" + userText;
+    conversation.push("你：" + userText);
+
+    // AI 回答
+    const reply = await askOpenAI(userText);
+    conversation.push("梦境的TA：" + reply);
+    dialogOutput.textContent = reply;
+}
+
+/* ============================================================
+   Save Memory：生成日志
+============================================================ */
+const saveButton = document.ge
